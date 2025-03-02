@@ -325,30 +325,24 @@ def test_geglu_correctness(use_approx=False):
         """Test the forward pass of GEGLU"""
         print(f"Testing {implementation_type} GEGLU forward pass...")
         
-        # Create test inputs
         batch_size, seq_len, hidden_dim = 2, 10, 128
         x = torch.randn(batch_size, seq_len, hidden_dim * 2, device='cuda', requires_grad=True)
         
-        # Reference implementation
         ref_output = geglu_reference_forward(x)
         
-        # Our implementation
         x_chunks = torch.chunk(x, 2, dim=-1)
         gate, value = x_chunks[0], x_chunks[1]
         gate_flat = gate.reshape(-1)
         value_flat = value.reshape(-1)
         
-        # Create output tensor
         output_flat = torch.empty_like(gate_flat)
         
-        # Run our kernel
         n_elements = gate_flat.numel()
         grid = lambda meta: (triton.cdiv(n_elements, meta['BLOCK_SIZE']),)
         forward_kernel[grid](gate_flat, value_flat, output_flat, n_elements, BLOCK_SIZE=1024)
         
         our_output = output_flat.reshape(gate.shape)
         
-        # Compare results
         max_diff = torch.max(torch.abs(ref_output - our_output))
         print(f"Max difference in {implementation_type} GEGLU forward pass: {max_diff.item()}")
         assert max_diff < 1e-2 if use_approx else 1e-5, f"{implementation_type} GEGLU forward pass implementation is incorrect!"
@@ -358,55 +352,43 @@ def test_geglu_correctness(use_approx=False):
         """Test the backward pass of GEGLU"""
         print(f"Testing {implementation_type} GEGLU backward pass...")
         
-        # Create test inputs
         batch_size, seq_len, hidden_dim = 2, 10, 128
         x = torch.randn(batch_size, seq_len, hidden_dim * 2, device='cuda', requires_grad=True)
         
-        # Reference implementation with gradient tracking
         x_ref = x.clone().detach().requires_grad_(True)
         ref_output = geglu_reference_forward(x_ref)
         
-        # Create a gradient for backpropagation
         grad_output = torch.randn_like(ref_output)
         
-        # Backward pass for reference
         ref_output.backward(grad_output)
         ref_grad = x_ref.grad.clone()
         
-        # Our implementation
         x_chunks = torch.chunk(x, 2, dim=-1)
         gate, value = x_chunks[0], x_chunks[1]
         gate_flat = gate.reshape(-1)
         value_flat = value.reshape(-1)
         
-        # Forward pass (needed for some backward implementations)
         output_flat = torch.empty_like(gate_flat)
         n_elements = gate_flat.numel()
         grid = lambda meta: (triton.cdiv(n_elements, meta['BLOCK_SIZE']),)
         forward_kernel[grid](gate_flat, value_flat, output_flat, n_elements, BLOCK_SIZE=1024)
         
-        # Prepare for backward pass
         grad_output_flat = grad_output.reshape(-1)
         
-        # Clone tensors for backward pass
         dW = grad_output_flat.clone()
         e = gate_flat.clone()
         g = value_flat.clone()
         
-        # Run backward kernel
         grid = lambda meta: (triton.cdiv(n_elements, meta['BLOCK_SIZE']),)
         backward_kernel[grid](dW, e, g, n_elements, BLOCK_SIZE=1024)
         
-        # Reshape gradients to match input shape
         our_grad = torch.cat([e.reshape(gate.shape), g.reshape(value.shape)], dim=-1)
         
-        # Compare results
         max_diff = torch.max(torch.abs(ref_grad - our_grad))
         print(f"Max difference in {implementation_type} GEGLU backward pass: {max_diff.item()}")
         assert max_diff < 1e-2 if use_approx else 1e-5, f"{implementation_type} GEGLU backward pass implementation is incorrect!"
         return True
     
-    # Run tests
     forward_passed = test_forward()
     backward_passed = test_backward()
     
@@ -415,7 +397,6 @@ def test_geglu_correctness(use_approx=False):
     else:
         print(f"Tests failed! {implementation_type.capitalize()} GEGLU implementation needs fixing.")
 
-# Example usage:
 if __name__ == "__main__":
     # Test exact implementation
     test_geglu_correctness(use_approx=False)
