@@ -45,13 +45,7 @@ $$\frac{\partial CE}{\partial x_i} = \frac{\partial}{\partial x_i}(-x_{class} + 
 
 $$\frac{\partial CE}{\partial x_i} = 0 + \frac{\partial z}{\partial x_i}$$
 
-For the LogSumExp term:
-
-$$\frac{\partial z}{\partial x_i} = \frac{\partial}{\partial x_i}\log\left(\sum_j e^{x_j}\right)$$
-
-$$\frac{\partial z}{\partial x_i} = \frac{1}{\sum_j e^{x_j}} \cdot \frac{\partial}{\partial x_i}\left(\sum_j e^{x_j}\right)$$
-
-$$\frac{\partial z}{\partial x_i} = \frac{1}{\sum_j e^{x_j}} \cdot e^{x_i}$$
+For the LogSumExp term same as before:
 
 $$\frac{\partial z}{\partial x_i} = \frac{e^{x_i}}{\sum_j e^{x_j}} = \text{softmax}(x)[i]$$
 

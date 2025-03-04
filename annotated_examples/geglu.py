@@ -108,7 +108,7 @@ def _exact_backward_kernel(dY, e, g, n_elements, BLOCK_SIZE : tl.constexpr,):
     - dg: gradient with respect to g (up values)
     
     For de, we need the derivative of f with respect to e:
-    df/de = 1/2 * (1 + erf(1/sqrt(2) * e)) + 1/sqrt(2*pi) * e * exp(-1/2 * e^2) (see backprop_math/geglu.md)
+    df/de = 1/2 * (1 + erf(1/sqrt(2) * x)) + 1/sqrt(2*pi) * x * exp(-1/2 * x^2) (see backprop_math/geglu.md)
     
     Parameters:
     - dY: gradient flowing from the next layer (dL/dh)
