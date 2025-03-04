@@ -115,7 +115,7 @@ $$\frac{\partial \hat{X}_i}{\partial \sigma} = -\frac{X_i-\mu}{\sigma^2} = -\fra
 
 Combining these:
 
-$$\frac{\partial \hat{X}_i}{\partial X_j}_{\text{via }\sigma} = \frac{\partial \hat{X}_i}{\partial \sigma} \cdot \frac{\partial \sigma}{\partial X_j}$$
+$$\frac{\partial \hat{X}_i}{\partial X_j}_{\text{ via }\sigma} = \frac{\partial \hat{X}_i}{\partial \sigma} \cdot \frac{\partial \sigma}{\partial X_j}$$
 
 $$= -\frac{\hat{X}_i}{\sigma} \cdot \frac{1}{n}\hat{X}_j$$
 
