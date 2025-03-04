@@ -41,7 +41,6 @@ Now we need to compute $\nabla_X$ given $\nabla_{\hat{X}}$, using the chain rule
 
 $$\nabla_X = \frac{\partial \hat{X}}{\partial X} \cdot \nabla_{\hat{X}}$$
 
-
 We need to compute the gradient of $\hat{X}$ with respect to $X$. The normalized value is:
 $$\hat{X} = \frac{X - \mu}{\sigma}$$
 
@@ -91,6 +90,7 @@ $$\frac{\partial \sigma}{\partial X_j} = \frac{1}{2\sigma} \cdot \frac{1}{n} \cd
 
 This further simplifies to:
 $$\frac{\partial \sigma}{\partial X_j} = \frac{1}{n\sigma}(X_j-\mu)$$
+
 because $\sum_{i=1}^n (X_i-\mu) = 0$ and that's because $\mu = \frac{1}{n}\sum_{i=1}^n X_i$.
 
 Or in terms of $\hat{X}$:
@@ -101,7 +101,6 @@ $$\frac{\partial \hat{X}_i}{\partial \sigma} = -\frac{X_i-\mu}{\sigma^2} = -\fra
 
 Combining these:
 $$\frac{\partial \hat{X}_i}{\partial X_j}_{\text{via }\sigma} = \frac{\partial \hat{X}_i}{\partial \sigma} \cdot \frac{\partial \sigma}{\partial X_j} = -\frac{\hat{X}_i}{\sigma} \cdot \frac{1}{n}\hat{X}_j = -\frac{1}{n\sigma}\hat{X}_i\hat{X}_j$$
-
 
 #### Combining All Components
 
@@ -122,6 +121,5 @@ $$\nabla_X = \frac{1}{\sigma}\left(\nabla_Y \odot \gamma - \frac{1}{n}\mathbf{1}
 This can be written more compactly as:
 
 $$\nabla_X = \frac{1}{\sigma}\left(\nabla_Y \odot \gamma - \left(\frac{1}{n}\hat{X} \cdot (\nabla_Y \odot \gamma)\right) \odot \hat{X} - \frac{1}{n}\nabla_Y \cdot \gamma \right)$$
-
 
 This is the complete formula for the backward pass of layer normalization with respect to the input $X$.

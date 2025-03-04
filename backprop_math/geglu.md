@@ -8,7 +8,6 @@ $$f = \frac{1}{2} \cdot e \cdot \left(1 + \text{erf}\left(\frac{1}{\sqrt{2}} \cd
 Using the product rule: $\frac{d}{dx}[u(x) \cdot v(x)] = u'(x) \cdot v(x) + u(x) \cdot v'(x)$
 
 Let:
-
 - $u(e) = \frac{1}{2} \cdot e$
 - $v(e) = 1 + \text{erf}\left(\frac{1}{\sqrt{2}} \cdot e\right)$
 
@@ -47,8 +46,10 @@ $$f(e) = 0.5 \cdot e \cdot (1 + \tanh(\sqrt{\frac{2}{\pi}} \cdot e \cdot (1 + 0.
 
 For simplicity, let's denote:
 $$z(e) = \sqrt{\frac{2}{\pi}} \cdot e \cdot (1 + 0.044715 \cdot e^2) = e \cdot (a + b \cdot e^2)$$
+
 and 
 $$v(e) = 1 + \tanh(z(e))$$
+
 Then:
 $$f(e) = 0.5 \cdot e \cdot (1 + \tanh(z(e))) = 0.5 \cdot e \cdot v(e)$$
 
