@@ -27,7 +27,9 @@ We'll derive $\nabla_X$ (gradient with respect to input) given $\nabla_Y$ (gradi
 
 ### Step 1: Gradient from $Y$ to $\hat{X}$
 
-Starting with $Y = \gamma \odot \hat{X} + \beta$
+Starting with 
+
+$$Y = \gamma \odot \hat{X} + \beta$$
 
 Taking the derivative with respect to $\hat{X}$:
 
@@ -37,11 +39,12 @@ This means each element of the gradient with respect to $\hat{X}$ is the corresp
 
 ### Step 2: Gradient from $\hat{X}$ to $X$
 
-Now we need to compute $\nabla_X$ given $\nabla_{\hat{X}}$, using the chain rule again : 
+Now we need to compute $\nabla_X$ given $\nabla_{\hat{X}}$, using the chain rule again: 
 
 $$\nabla_X = \frac{\partial \hat{X}}{\partial X} \cdot \nabla_{\hat{X}}$$
 
 We need to compute the gradient of $\hat{X}$ with respect to $X$. The normalized value is:
+
 $$\hat{X} = \frac{X - \mu}{\sigma}$$
 
 We need to account for how changes in $X$ affect $\hat{X}$ both directly and through $\mu$ and $\sigma$.
@@ -49,6 +52,7 @@ We need to account for how changes in $X$ affect $\hat{X}$ both directly and thr
 #### Component 1: Direct effect on $X$
 
 For the direct effect (ignoring effects through $\mu$ and $\sigma$):
+
 $$\frac{\partial \hat{X}}{\partial X}_{\text{direct}} = \frac{1}{\sigma}\mathbf{I}$$
 
 Where $\mathbf{I}$ is the identity matrix.
@@ -58,12 +62,15 @@ Where $\mathbf{I}$ is the identity matrix.
 The mean $\mu = \frac{1}{n}\sum_{i=1}^n X_i$ depends on all elements of $X$.
 
 For any element $X_j$:
+
 $$\frac{\partial \mu}{\partial X_j} = \frac{1}{n}$$
 
 The effect on $\hat{X}_i$ through $\mu$ is:
+
 $$\frac{\partial \hat{X}_i}{\partial \mu} = -\frac{1}{\sigma}$$
 
 Combining these:
+
 $$\frac{\partial \hat{X}_i}{\partial X_j}_{\text{via }\mu} = \frac{\partial \hat{X}_i}{\partial \mu} \cdot \frac{\partial \mu}{\partial X_j} = -\frac{1}{\sigma} \cdot \frac{1}{n} = -\frac{1}{n\sigma}$$
 
 #### Component 3: Effect through $\sigma$
@@ -74,32 +81,40 @@ First, let's compute $\frac{\partial \sigma}{\partial X_j}$:
 
 $${2\sigma} \cdot \frac{\partial \sigma}{\partial X_j} = \frac{\partial}{\partial X_j}\left(\frac{1}{n}\sum_{i=1}^n(X_i-\mu)^2\right)$$
 
-Which is : 
+Which is: 
+
 $$\frac{\partial \sigma}{\partial X_j} = \frac{1}{2\sigma} \cdot \frac{\partial}{\partial X_j}\left(\frac{1}{n}\sum_{i=1}^n(X_i-\mu)^2\right)$$
 
 We need to account for both the direct effect on $(X_j-\mu)^2$ and the indirect effect through $\mu$ on all terms $(X_i-\mu)^2$.
 
 The direct effect when $i = j$ is:
+
 $$\frac{\partial}{\partial X_j}(X_j-\mu)^2 = 2(X_j-\mu) \cdot \left(1 - \frac{\partial \mu}{\partial X_j}\right) = 2(X_j-\mu) \cdot \left(1 - \frac{1}{n}\right)$$
 
 The indirect effect through $\mu$ for each $i \neq j$ is:
+
 $$\frac{\partial}{\partial X_j}(X_i-\mu)^2 = 2(X_i-\mu) \cdot \left(- \frac{\partial \mu}{\partial X_j}\right) = -2(X_i-\mu) \cdot \frac{1}{n}$$
 
 Combining these and simplifying:
+
 $$\frac{\partial \sigma}{\partial X_j} = \frac{1}{2\sigma} \cdot \frac{1}{n} \cdot \left(2(X_j-\mu)\left(1-\frac{1}{n}\right) - \sum_{i \neq j}2(X_i-\mu)\frac{1}{n}\right)$$
 
 This further simplifies to:
+
 $$\frac{\partial \sigma}{\partial X_j} = \frac{1}{n\sigma}(X_j-\mu)$$
 
 because $\sum_{i=1}^n (X_i-\mu) = 0$ and that's because $\mu = \frac{1}{n}\sum_{i=1}^n X_i$.
 
 Or in terms of $\hat{X}$:
+
 $$\frac{\partial \sigma}{\partial X_j} = \frac{1}{n}\hat{X}_j$$
 
 Now, the effect on $\hat{X}_i$ through $\sigma$ is:
+
 $$\frac{\partial \hat{X}_i}{\partial \sigma} = -\frac{X_i-\mu}{\sigma^2} = -\frac{\hat{X}_i}{\sigma}$$
 
 Combining these:
+
 $$\frac{\partial \hat{X}_i}{\partial X_j}_{\text{via }\sigma} = \frac{\partial \hat{X}_i}{\partial \sigma} \cdot \frac{\partial \sigma}{\partial X_j} = -\frac{\hat{X}_i}{\sigma} \cdot \frac{1}{n}\hat{X}_j = -\frac{1}{n\sigma}\hat{X}_i\hat{X}_j$$
 
 #### Combining All Components
