@@ -115,13 +115,19 @@ $$\frac{\partial \hat{X}_i}{\partial \sigma} = -\frac{X_i-\mu}{\sigma^2} = -\fra
 
 Combining these:
 
-$$\frac{\partial \hat{X}_i}{\partial X_j}_{\text{via }\sigma} = \frac{\partial \hat{X}_i}{\partial \sigma} \cdot \frac{\partial \sigma}{\partial X_j} = -\frac{\hat{X}_i}{\sigma} \cdot \frac{1}{n}\hat{X}_j = -\frac{1}{n\sigma}\hat{X}_i\hat{X}_j$$
+$$\frac{\partial \hat{X}_i}{\partial X_j}_{\text{via }\sigma} = \frac{\partial \hat{X}_i}{\partial \sigma} \cdot \frac{\partial \sigma}{\partial X_j}$$
+
+$$= -\frac{\hat{X}_i}{\sigma} \cdot \frac{1}{n}\hat{X}_j$$
+
+$$= -\frac{1}{n\sigma}\hat{X}_i\hat{X}_j$$
 
 #### Combining All Components
 
 Adding all three components together:
 
-$$\nabla_{X_i} = \left(\frac{\partial \hat{X}}{\partial X}\right)_{i,:}\cdot \nabla_{\hat{X}} = \frac{1}{\sigma}\nabla_{\hat{X}_i} - \frac{1}{n\sigma}\sum_{j=1}^n \nabla_{\hat{X}_j} - \frac{\hat{X}_i}{n\sigma}\sum_{j=1}^n \nabla_{\hat{X}_j}\hat{X}_j$$
+$$\nabla_{X_i} = \left(\frac{\partial \hat{X}}{\partial X}\right)_{i,:}\cdot \nabla_{\hat{X}}$$
+
+$$= \frac{1}{\sigma}\nabla_{\hat{X}_i} - \frac{1}{n\sigma}\sum_{j=1}^n \nabla_{\hat{X}_j} - \frac{\hat{X}_i}{n\sigma}\sum_{j=1}^n \nabla_{\hat{X}_j}\hat{X}_j$$
 
 In vector notation:
 
