@@ -2,7 +2,7 @@ import torch, math, random, copy
 from torch import Tensor
 import triton
 import triton.language as tl
-
+import pdb
 
 @triton.jit
 def matmul_kernel(
@@ -61,7 +61,7 @@ def matmul_kernel(
     # For our example: num_pid_m = ceil(16/2) = 8, num_pid_n = ceil(8/2) = 4
     num_pid_m = tl.cdiv(M, BLOCK_SIZE_M)  # Number of blocks in M dimension
     num_pid_n = tl.cdiv(N, BLOCK_SIZE_N)  # Number of blocks in N dimension
-    
+
     # L2 cache optimization: Group blocks along M dimension to promote data reuse
     # For our example: num_pid_in_group = 3*4 = 12 (total blocks in a group)
     num_pid_in_group = GROUP_SIZE_M * num_pid_n
@@ -128,8 +128,21 @@ def matmul_kernel(
     # [pid=14, pid=17, pid=20, pid=23]
     # [pid=24, pid=26, pid=28, pid=30]
     # [pid=25, pid=27, pid=29, pid=31]
-    # you can see that the pattern is a swizzle pattern it's more efficient than a linear pattern 
-    # because it improves the L2 cache hit rate
+    #
+    # Swizzle pattern visualization:
+    # Group 0:                Group 1:                Group 2:
+    # +---+---+---+---+      +---+---+---+---+      +---+---+---+---+
+    # | 0 | 3 | 6 | 9 |      |12 |15 |18 |21 |      |24 |26 |28 |30 |
+    # +---+---+---+---+      +---+---+---+---+      +---+---+---+---+
+    # | 1 | 4 | 7 |10 |      |13 |16 |19 |22 |      |25 |27 |29 |31 |
+    # +---+---+---+---+      +---+---+---+---+      +---+---+---+---+
+    # | 2 | 5 | 8 |11 |      |14 |17 |20 |23 |      +---+---+---+---+
+    # +---+---+---+---+      +---+---+---+---+
+    #
+    # Notice how threads are assigned in column-major order within each group:
+    # - Within each group, we process blocks in a column-first pattern (0,1,2 then 3,4,5 etc.)
+    # - This creates spatial locality for memory accesses within each group
+    # - Adjacent thread blocks process adjacent memory, improving cache efficiency
     
     pid_m = first_pid_m + ((pid % num_pid_in_group) % group_size_m)
     pid_n = (pid % num_pid_in_group) // group_size_m
@@ -178,14 +191,23 @@ def matmul_kernel(
         # For pid=0, iteration 1: we load A[0:2, 2:4] and B[2:4, 0:2]
         # For pid=0, iteration 2: we load A[0:2, 4:6] and B[4:6, 0:2]
         # And so on...
-        tl.device_print(k)
-        tl.device_print(offs_k)
-        tl.device_print(offs_k[None, :])
-        tl.device_print(offs_k[:, None])
+
+        # Calculate how many elements remain in the K dimension for the current iteration
         k_remaining = K - k * BLOCK_SIZE_K
-        a_mask = (offs_k[None, :] < k_remaining)
-        b_mask = (offs_k[:, None] < k_remaining)
         
+        # a_mask handles the columns of matrix A (K dimension)
+        # For example, if K=10 and BLOCK_SIZE_K=4, in the last iteration (k=2):
+        # - k_remaining = 10 - 2*4 = 2
+        # - offs_k = [0,1,2,3]
+        # - a_mask will be [[True,True,False,False]]
+        # This ensures we only load the valid 2 remaining columns
+        a_mask = (offs_k[None, :] < k_remaining)
+        
+        # b_mask handles the rows of matrix B (K dimension)
+        # Using the same example, b_mask will be:
+        # [[True], [True], [False], [False]]
+        # This ensures we only load the valid 2 remaining rows
+        b_mask = (offs_k[:, None] < k_remaining)
         a = tl.load(a_ptrs, mask=a_mask, other=0.0)
         b = tl.load(b_ptrs, mask=b_mask, other=0.0)
         
@@ -241,9 +263,9 @@ def matmul(a, b, activation=None):
     K, N = b.shape
     # Initialize output tensor
     c = torch.empty((M, N), device=a.device, dtype=torch.float16)
-    BLOCK_SIZE_M = 128
-    BLOCK_SIZE_N = 128
-    BLOCK_SIZE_K = 128
+    BLOCK_SIZE_M = 64
+    BLOCK_SIZE_N = 64
+    BLOCK_SIZE_K = 64
     GROUP_SIZE_M = 8
     # Calculate grid dimensions based on block sizes
     grid = (triton.cdiv(M, BLOCK_SIZE_M) * triton.cdiv(N, BLOCK_SIZE_N),)
@@ -271,32 +293,7 @@ def matmul(a, b, activation=None):
 
 # Test function for the matmul implementation
 def test_matmul():
-    import torch
-    
-    # Set sizes for test matrices
-    M, N, K = 1024, 1024, 1024
-    
-    # Create random input matrices
-    a = torch.randn((M, K), device='cuda', dtype=torch.float16)
-    b = torch.randn((K, N), device='cuda', dtype=torch.float16)
-    
-    # Compute reference result using PyTorch
-    c_ref = torch.nn.functional.leaky_relu(torch.matmul(a, b), negative_slope=0.01)
-    
-    # Compute result using our implementation    
-    # Compute result with activation
-    c_triton_activated = matmul(a, b, activation="leaky_relu")
-    
-    # Verify results match (within numerical tolerance)
-    assert torch.allclose(c_ref, c_triton_activated, rtol=1e-2, atol=1e-2), "Results don't match!"
-    
-    # Verify activation was applied correctly
-    c_ref_activated = torch.nn.functional.leaky_relu(torch.matmul(a, b), negative_slope=0.01)
-    assert torch.allclose(c_ref_activated, c_triton_activated, rtol=1e-2, atol=1e-2), "Activation results don't match!"
-    
-    print("All tests passed!")
-    
-    # Test with different sizes
+    import torch    
     for m, n, k in [(32, 32, 32), (256, 512, 128), (1024, 1024, 1024)]:
         a = torch.randn((m, k), device='cuda', dtype=torch.float16)
         b = torch.randn((k, n), device='cuda', dtype=torch.float16)
