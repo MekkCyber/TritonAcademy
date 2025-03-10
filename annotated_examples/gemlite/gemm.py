@@ -5,6 +5,8 @@ import torch, time
 import triton
 import triton.language as tl
 
+########################################################################################################################################################################
+
 # Prerequisities for the gemm, for better understanding start from the gemm_kernel function, everything is explained there
 @triton.jit
 def dequantize(b, scales, zeros, q_shift, meta_dtype, unpack_mask, elements_per_sample: tl.constexpr, W_group_mode: tl.constexpr, zero_is_scalar: tl.constexpr):
@@ -75,8 +77,9 @@ def linear_tile(pid, M, N, BLOCK_SIZE_M: tl.constexpr, BLOCK_SIZE_N: tl.constexp
     pid_m = pid // tl.cdiv(N, BLOCK_SIZE_N)
     pid_n = pid % tl.cdiv(N, BLOCK_SIZE_N)
     return pid_m, pid_n
+########################################################################################################################################################################
 
-# Main kernel, that should be studied for better understanding
+# START HERE for the gemm kernel
 @triton.jit
 def gemm_kernel(
     a_ptr, b_ptr, c_ptr,
@@ -179,7 +182,6 @@ def gemm_kernel(
         # - For example, if the first BLOCK_SIZE_M elements in offs_am are contiguous (0,1,2,...), 
         #   the compiler can use coalesced memory accesses
         offs_bn = tl.max_contiguous(tl.multiple_of(offs_bn, BLOCK_SIZE_N), BLOCK_SIZE_N)
-        offs_am = tl.max_contiguous(tl.multiple_of(offs_am, BLOCK_SIZE_M), BLOCK_SIZE_M)
     
     # Calculate pointers to input matrices
     # For matrix A: If stride_am=K and stride_ak=1, this accesses A in row-major order
@@ -418,24 +420,7 @@ def test_kernel():
     grid = lambda META: (
         triton.cdiv(M, META['BLOCK_SIZE_M']) * triton.cdiv(N, META['BLOCK_SIZE_N']),
     )
-    
-    # Run the kernel
-    gemm_kernel[grid](
-        a_ptr=a, b_ptr=b_packed, c_ptr=c_triton,
-        scales_ptr=scales, zeros_ptr=zeros, scales_a_ptr=scales_a,
-        M=M, N=N, K=K,
-        W_nbits=W_nbits, group_size=group_size, 
-        unpack_mask=(1 << W_nbits) - 1, elements_per_sample=elements_per_sample,
-        stride_am=stride_am, stride_ak=stride_ak,
-        stride_bk=stride_bk, stride_bn=stride_bn,
-        stride_cm=stride_cm, stride_cn=stride_cn,
-        stride_meta_g=stride_meta_g, stride_meta_n=stride_meta_n,
-        input_dtype=tl.float16, output_dtype=tl.float16, acc_dtype=tl.float32, meta_dtype=tl.float16,
-        channel_scale_mode=1, W_group_mode=1, zero_is_scalar=0,
-        BLOCK_SIZE_M=16, BLOCK_SIZE_N=16, BLOCK_SIZE_K=64, GROUP_SIZE_M=8,
-        A_load_order=1, meta_evict_policy='evict_last', data_contiguous=1,
-    )
-    
+        
     # For verification, compute reference result using PyTorch
     # Dequantize the weights
     b_dequantized = torch.zeros((K, N), dtype=torch.float16, device='cuda')
