@@ -79,7 +79,7 @@ def linear_tile(pid, M, N, BLOCK_SIZE_M: tl.constexpr, BLOCK_SIZE_N: tl.constexp
     return pid_m, pid_n
 ########################################################################################################################################################################
 
-# START HERE for the gemm kernel
+# START HERE for the gemm kernel 
 @triton.jit
 def gemm_kernel(
     a_ptr, b_ptr, c_ptr,
@@ -469,7 +469,6 @@ def test_kernel():
     end = time.time()
     
     elapsed_time = (end - start) / rep
-    
     print(f"Triton kernel time: {elapsed_time * 1000:.2f} ms")
 
     
