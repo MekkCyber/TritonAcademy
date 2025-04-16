@@ -1,6 +1,6 @@
 # Written by Dr. Hicham Badri @Mobius Labs GmbH - 2024
 # Modified by MekkCyber - 2025
-#********************************************************
+#*******************************************************
 import triton
 import triton.language as tl
 
