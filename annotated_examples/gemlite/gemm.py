@@ -1,6 +1,6 @@
 # Written by Dr. Hicham Badri @Mobius Labs GmbH - 2024
 # Modified by Mekkcyber - 2025
-#********************************************************
+#*******************************************************
 import torch, time
 import triton
 import triton.language as tl
