@@ -109,3 +109,4 @@ Substituting $z'(x) = a + 3b \cdot x^2$:
 $$\frac{df}{dx} = 0.5 \cdot v(x) + 0.5 \cdot x \cdot (2 - v(x)) \cdot v(x) \cdot (a + 3b \cdot x^2)$$
 
 $$\frac{df}{dx} = 0.5 \cdot v(x) \cdot \left[1 + x \cdot (2 - v(x)) \cdot (a + 3b \cdot x^2)\right]$$
+
