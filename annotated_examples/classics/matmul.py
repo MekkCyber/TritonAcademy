@@ -288,7 +288,6 @@ def matmul(a, b, activation=None):
         BLOCK_SIZE_K=BLOCK_SIZE_K,
         GROUP_SIZE_M=GROUP_SIZE_M,
     )
-    
     return c
 
 # Test function for the matmul implementation
