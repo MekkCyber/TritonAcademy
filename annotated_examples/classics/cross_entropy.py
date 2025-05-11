@@ -413,6 +413,5 @@ def test_cross_entropy():
     print("\nAll tests passed successfully!")
     return True
 
-
 if __name__ == "__main__":
     test_cross_entropy()
