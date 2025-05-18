@@ -140,3 +140,4 @@ This can be written more compactly as:
 $$\nabla_X = \frac{1}{\sigma}\left(\nabla_Y \odot \gamma - \left(\frac{1}{n}\hat{X} \cdot (\nabla_Y \odot \gamma)\right) \odot \hat{X} - \frac{1}{n}\nabla_Y \cdot \gamma \right)$$
 
 This is the complete formula for the backward pass of layer normalization with respect to the input $X$.
+
