@@ -74,3 +74,5 @@ Explanation:
 ## Resources
 - [CUDA Programming Course – High-Performance Computing with GPUs](https://www.youtube.com/watch?v=86FAWCzIe_4&t=30156s&pp=ygUNdHJpdG9uIGNvdXJzZQ%3D%3D)
 - [Triton Tutorials](https://triton-lang.org/main/getting-started/tutorials/index.html)
+- [Triton Puzzles](https://github.com/srush/Triton-Puzzles)
+- 
